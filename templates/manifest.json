@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "project": "react-starter-composer",
+  "baseTemplates": {
+    "js": {
+      "label": "React + Vite (JavaScript)",
+      "path": "templates/base/js",
+      "files": [
+        "package.json",
+        "index.html",
+        "src/main.jsx",
+        "src/App.jsx",
+        "src/index.css",
+        "README.md"
+      ]
+    },
+    "ts": {
+      "label": "React + Vite (TypeScript)",
+      "path": "templates/base/ts",
+      "files": [
+        "package.json",
+        "index.html",
+        "src/main.tsx",
+        "src/App.tsx",
+        "src/index.css",
+        "README.md"
+      ]
+    }
+  },
+  "options": [
+    {
+      "id": "tailwind",
+      "label": "Tailwind CSS",
+      "category": "styling",
+      "files": [
+        "templates/options/tailwind/tailwind.config.js",
+        "templates/options/tailwind/postcss.config.js",
+        "templates/options/tailwind/src/index.css"
+      ],
+      "dependencies": [],
+      "devDependencies": [
+        "tailwindcss",
+        "postcss",
+        "autoprefixer"
+      ],
+      "scripts": {},
+      "installCommands": [
+        "npm install -D tailwindcss postcss autoprefixer"
+      ]
+    },
+    {
+      "id": "vitest",
+      "label": "Vitest",
+      "category": "testing",
+      "files": [
+        "templates/options/vitest/js/vitest.config.js",
+        "templates/options/vitest/js/src/setupTests.js",
+        "templates/options/vitest/js/src/App.test.jsx",
+        "templates/options/vitest/ts/vitest.config.ts",
+        "templates/options/vitest/ts/src/setupTests.ts",
+        "templates/options/vitest/ts/src/App.test.tsx"
+      ],
+      "dependencies": [],
+      "devDependencies": [
+        "vitest",
+        "jsdom",
+        "@testing-library/react",
+        "@testing-library/jest-dom",
+        "@testing-library/user-event"
+      ],
+      "scripts": {
+        "test": "vitest",
+        "test:coverage": "vitest --coverage"
+      },
+      "installCommands": [
+        "npm install -D vitest jsdom @testing-library/react @testing-library/jest-dom @testing-library/user-event"
+      ]
+    },
+    {
+      "id": "zustand",
+      "label": "Zustand",
+      "category": "state",
+      "files": [
+        "templates/options/zustand/js/src/stores/useCounterStore.js",
+        "templates/options/zustand/js/src/components/Counter.jsx",
+        "templates/options/zustand/ts/src/stores/useCounterStore.ts",
+        "templates/options/zustand/ts/src/components/Counter.tsx"
+      ],
+      "dependencies": [
+        "zustand"
+      ],
+      "devDependencies": [],
+      "scripts": {},
+      "installCommands": [
+        "npm install zustand"
+      ]
+    },
+    {
+      "id": "lucide",
+      "label": "Lucide React",
+      "category": "icons",
+      "files": [
+        "templates/options/lucide/js/src/components/IconExample.jsx",
+        "templates/options/lucide/ts/src/components/IconExample.tsx"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "devDependencies": [],
+      "scripts": {},
+      "installCommands": [
+        "npm install lucide-react"
+      ]
+    },
+    {
+      "id": "prettier",
+      "label": "Prettier",
+      "category": "codeQuality",
+      "files": [
+        "templates/options/prettier/.prettierrc",
+        "templates/options/prettier/.prettierignore"
+      ],
+      "dependencies": [],
+      "devDependencies": [
+        "prettier"
+      ],
+      "scripts": {
+        "format": "prettier --write ."
+      },
+      "installCommands": [
+        "npm install -D prettier"
+      ]
+    }
+  ]
+}
