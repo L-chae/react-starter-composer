@@ -2,6 +2,7 @@ const cors = require('cors');
 const express = require('express');
 const { buildComposerResult } = require('./composer');
 const { generateProjectFromComposerResult } = require('./project-generator');
+const { zipGeneratedProject } = require('./zipper');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -13,7 +14,7 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
-app.post('/api/generate', (req, res) => {
+app.post('/api/generate', async (req, res) => {
   try {
     const composed = buildComposerResult(req.body);
 
@@ -26,13 +27,17 @@ app.post('/api/generate', (req, res) => {
     }
 
     const generated = generateProjectFromComposerResult(composed.result);
+    const zipped = await zipGeneratedProject(generated.outputPath, composed.result.projectName);
 
     return res.json({
       ok: true,
-      message: 'Project files generated',
+      message: 'Project files generated and zipped',
       result: composed.result,
       outputPath: generated.outputPath,
       generatedFiles: generated.generatedFiles,
+      zipPath: zipped.zipPath,
+      zipFileName: zipped.zipFileName,
+      zipSizeBytes: zipped.sizeBytes,
     });
   } catch (error) {
     return res.status(400).json({

@@ -123,7 +123,12 @@ function generateProjectFromComposerResult(composerResult) {
   ensureWithin(OUTPUT_ROOT, projectDir, 'Project directory');
 
   fs.mkdirSync(OUTPUT_ROOT, { recursive: true });
-  fs.rmSync(projectDir, { recursive: true, force: true });
+  fs.rmSync(projectDir, {
+    recursive: true,
+    force: true,
+    maxRetries: 5,
+    retryDelay: 100,
+  });
   fs.mkdirSync(projectDir, { recursive: true });
 
   const generatedFiles = [];
