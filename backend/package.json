@@ -5,6 +5,7 @@
   "description": "Backend skeleton for React Starter Composer",
   "main": "src/index.js",
   "scripts": {
+    "check": "node src/check-composer.js",
     "dev": "node src/index.js",
     "start": "node src/index.js"
   },
