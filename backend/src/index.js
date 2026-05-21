@@ -1,6 +1,7 @@
 const cors = require('cors');
 const express = require('express');
 const { buildComposerResult } = require('./composer');
+const { generateProjectFromComposerResult } = require('./project-generator');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -24,10 +25,14 @@ app.post('/api/generate', (req, res) => {
       });
     }
 
+    const generated = generateProjectFromComposerResult(composed.result);
+
     return res.json({
       ok: true,
-      message: 'Composer result generated',
+      message: 'Project files generated',
       result: composed.result,
+      outputPath: generated.outputPath,
+      generatedFiles: generated.generatedFiles,
     });
   } catch (error) {
     return res.status(400).json({
