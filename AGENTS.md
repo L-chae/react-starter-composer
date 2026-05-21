@@ -2,48 +2,85 @@
 
 ## 1. Project Overview
 - React Starter Composer는 GUI 기반 React + Vite 스타터 생성기다.
-- 사용자가 언어, 스타일링, 테스트, 상태관리, 아이콘, 포맷팅 옵션을 선택하면 파일 구조와 설치 명령어를 미리 보여준다.
-- 이후 백엔드에서 선택값에 따라 ZIP 프로젝트를 생성한다.
+- 사용자가 옵션을 선택하면 파일 구조, 설치 명령어, `package.json scripts`를 preview 한다.
+- 이후 backend composer가 templates를 조립하고 ZIP으로 제공한다.
 
-## 2. Directory Structure
-- `frontend/`
-- `backend/`
-- `templates/`
+## 2. Current Phase
+- Completed:
+  - project setup
+  - frontend preview UI
+  - backend Express skeleton
+  - templates manifest structure
+- Next:
+  - template composer logic
+- Not yet:
+  - ZIP download integration
+  - frontend-backend real download flow
 
-## 3. Current Phase
-- Phase 1: project setup 완료
-- Phase 2: frontend preview UI 완료
-- Next: backend Express skeleton
+## 3. Directory Rules
+- `frontend/`: UI와 preview 상태 관리
+- `backend/`: API, composer, ZIP 생성 로직
+- `templates/`: base template, option template, manifest
+- `output/`, `temp/` 생성물은 Git에 포함하지 않는다.
 
-## 4. Frontend Rules
-- 프론트 작업은 `frontend/` 안에서만 진행한다.
+## 4. Development Rules
+- 한 번에 하나의 Phase만 진행한다.
+- 작업 전 `git status`를 확인한다.
+- 작업 후 검증 명령어를 실행한다.
+- 기능 커밋 후 다음 Phase로 진행한다.
+- `frontend/backend/templates`를 동시에 크게 수정하지 않는다.
+- `AGENTS.md`는 Phase 변화나 실행 규칙 변화가 있을 때만 업데이트한다.
+
+## 5. Frontend Rules
 - React + TypeScript + Vite를 유지한다.
-- 외부 UI 라이브러리를 추가하지 않는다.
-- 스타일은 plain CSS를 유지한다.
-- `Generate ZIP` 버튼은 백엔드 구현 전까지 placeholder로 유지한다.
+- 외부 UI 라이브러리 추가를 금지한다.
+- plain CSS를 유지한다.
+- ZIP phase 전까지 `Generate ZIP`에 실제 다운로드 로직을 넣지 않는다.
 
-## 5. Backend Rules
-- 백엔드 작업은 `backend/` 안에서만 진행한다.
-- Node.js + Express를 사용한다.
-- `GET /health` 엔드포인트를 제공한다.
-- `POST /api/generate` 엔드포인트를 제공한다.
-- 서버 프로세스에서 `npm install`을 실행하지 않는다.
+## 6. Backend Rules
+- Node.js + Express를 유지한다.
+- 서버에서 `npm install` 실행을 금지한다.
+- 생성 프로젝트 의존성은 README/installCommands로 안내한다.
+- composer 로직을 ZIP 로직보다 먼저 구현한다.
+- `fs-extra`는 composer phase에서 필요 시 추가 가능하다.
+- `archiver`는 ZIP phase 전까지 추가하지 않는다.
 
-## 6. Template Rules
-- 템플릿 작업은 `templates/` 안에서만 진행한다.
-- `base/` + `options/` 구조를 사용한다.
-- 옵션은 `manifest` 기반으로 관리한다.
-- 초기 단계에서 모든 조합을 한 번에 지원하려고 하지 않는다.
+## 7. Template Rules
+- `manifest.json` 기반으로 옵션을 관리한다.
+- 모든 조합을 한 번에 지원하려고 하지 않는다.
+- 현재 지원 범위:
+  - `js` / `ts`
+  - `css` / `tailwind`
+  - `vitest`
+  - `zustand`
+  - `lucide`
+  - `prettier`
 
-## 7. Scope Exclusions
+## 8. Scope Exclusions
 - Next.js
 - Jest
 - Redux Toolkit
 - GitHub repo 자동 생성
-- 자동 의존성 버전 업데이트
-- 서버 측 `npm install` 실행
+- 자동 dependency version update
+- 서버 측 `npm install`
+- 모든 React 라이브러리 조합 지원
 
-## 8. Validation
-- Frontend: `npm run build` (in `frontend/`)
-- Backend: `npm run dev` 또는 `npm start` (in `backend/`)
-- 작업 후 `git status` 확인
+## 9. Validation Commands
+- frontend
+```bash
+cd frontend
+npm run build
+```
+- backend
+```bash
+cd backend
+npm run dev
+```
+- manifest
+```bash
+node -e "JSON.parse(require('fs').readFileSync('templates/manifest.json','utf8')); console.log('manifest valid')"
+```
+- git
+```bash
+git status --short
+```
