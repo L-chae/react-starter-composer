@@ -14,11 +14,12 @@
   - manifest-driven composer result generation
   - project file generation to `backend/output/temp/{projectName}`
   - Phase 7 ZIP generation
-- Next:
   - Phase 8 frontend-backend download integration
+- Next:
+  - Phase 9 polish, validation, portfolio preparation
 - Not yet:
-  - frontend `Generate ZIP` 버튼과 backend API 실연결
-  - browser blob download flow
+  - production deployment
+  - optional feature expansion beyond current scope
 
 ## 3. Directory Rules
 - `frontend/`: UI와 preview 상태 관리
@@ -33,13 +34,16 @@
 - 기능 커밋 후 다음 Phase로 진행한다.
 - `frontend/backend/templates`를 동시에 크게 수정하지 않는다.
 - `AGENTS.md`는 Phase 변화나 실행 규칙 변화가 있을 때만 업데이트한다.
+- Phase 9에서는 기능 확장보다 안정화를 우선한다.
+- 대규모 구조 변경을 금지한다.
+- 기존 동작을 깨지 않는 개선만 진행한다.
 
 ## 5. Frontend Rules
 - React + TypeScript + Vite를 유지한다.
 - 외부 UI 라이브러리 추가를 금지한다.
 - plain CSS를 유지한다.
-- Phase 8에서는 `Generate ZIP` 버튼을 backend API와 연결할 수 있다.
-- Phase 8에서는 browser blob 다운로드 처리를 구현할 수 있다.
+- 다운로드 상태 UX 개선은 가능하다.
+- 에러 메시지 개선은 가능하다.
 
 ## 6. Backend Rules
 - Node.js + Express를 유지한다.
@@ -50,6 +54,8 @@
 - ZIP 생성 로직은 구현 완료 상태로 유지한다.
 - ZIP 생성 경로는 `backend/output/zips`로 유지한다.
 - ZIP 내부 루트에는 `package.json`, `src/`, `README.md`가 바로 보이게 유지한다.
+- download endpoint를 유지한다.
+- path traversal 방지 검증을 유지한다.
 
 ## 6-1. Output Rules
 - 프로젝트 생성물: `backend/output/temp`
@@ -94,6 +100,7 @@ npm run dev
 ```
 - generate API 확인
 - `POST /api/generate` 응답에서 `zipPath`, `zipFileName`, `zipSizeBytes` 확인
+- 브라우저에서 `Generate ZIP` 다운로드 수동 확인
 - git
 ```bash
 git status --short
