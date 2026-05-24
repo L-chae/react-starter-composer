@@ -4,11 +4,75 @@ import { getApiUrl } from './config/api'
 
 type Language = 'ts' | 'js'
 type Styling = 'css' | 'tailwind'
+type ErrorResponse = {
+  ok: false
+  errors?: string[]
+}
+
+type GenerateSuccessResponse = {
+  ok: true
+  zipFileName: string
+}
+
 type GenerateResponse = {
   ok: boolean
-  message?: string
-  errors?: string[]
-  zipFileName?: string
+  zipFileName?: unknown
+  errors?: unknown
+}
+
+const GENERATING_MESSAGE = '프로젝트를 조립하고 ZIP을 생성하는 중입니다...'
+const BACKEND_CONNECTION_ERROR =
+  '백엔드 서버에 연결할 수 없습니다. backend 서버가 실행 중인지 확인하세요.'
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isErrorResponse(value: unknown): value is ErrorResponse {
+  return isRecord(value) && value.ok === false
+}
+
+function isGenerateSuccessResponse(value: unknown): value is GenerateSuccessResponse {
+  return (
+    isRecord(value) &&
+    value.ok === true &&
+    typeof value.zipFileName === 'string' &&
+    value.zipFileName.trim() !== ''
+  )
+}
+
+function getErrorsFromResponse(value: unknown): string[] {
+  if (!isErrorResponse(value) || !Array.isArray(value.errors)) {
+    return []
+  }
+
+  return value.errors.filter((error): error is string => typeof error === 'string' && error.trim() !== '')
+}
+
+async function parseJsonSafely(response: Response): Promise<unknown | null> {
+  const text = await response.text()
+
+  if (!text) {
+    return null
+  }
+
+  try {
+    return JSON.parse(text) as unknown
+  } catch {
+    return null
+  }
+}
+
+function toNetworkError(error: unknown): Error {
+  if (error instanceof TypeError) {
+    return new Error(BACKEND_CONNECTION_ERROR)
+  }
+
+  if (error instanceof Error) {
+    return error
+  }
+
+  return new Error('요청을 처리하지 못했습니다. 잠시 후 다시 시도하세요.')
 }
 
 function App() {
@@ -20,6 +84,7 @@ function App() {
   const [useLucide, setUseLucide] = useState(false)
   const [usePrettier, setUsePrettier] = useState(false)
   const [isGenerating, setIsGenerating] = useState(false)
+  const [statusMessage, setStatusMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
@@ -153,6 +218,7 @@ function App() {
     setUseZustand(false)
     setUseLucide(false)
     setUsePrettier(false)
+    setStatusMessage('')
     setErrorMessage('')
     setSuccessMessage('')
   }
@@ -160,6 +226,7 @@ function App() {
   const handleGenerateZip = async () => {
     try {
       setIsGenerating(true)
+      setStatusMessage(GENERATING_MESSAGE)
       setErrorMessage('')
       setSuccessMessage('')
 
@@ -173,52 +240,81 @@ function App() {
         usePrettier,
       }
 
-      const generateResponse = await fetch(getApiUrl('/api/generate'), {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
-
-      const generateData = (await generateResponse.json()) as GenerateResponse
-
-      if (!generateResponse.ok || !generateData.ok || !generateData.zipFileName) {
-        const detail = generateData.errors?.join(', ') || generateData.message || 'Unknown error'
-        throw new Error(`Generate failed: ${detail}`)
+      let generateResponse: Response
+      try {
+        generateResponse = await fetch(getApiUrl('/api/generate'), {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        })
+      } catch (error) {
+        throw toNetworkError(error)
       }
 
-      const downloadResponse = await fetch(
-        getApiUrl(`/api/download/${encodeURIComponent(generateData.zipFileName)}`),
-      )
+      const generateData = (await parseJsonSafely(generateResponse)) as GenerateResponse | null
+
+      if (!generateResponse.ok) {
+        const errors = getErrorsFromResponse(generateData)
+        if (errors.length > 0) {
+          throw new Error(errors.join('\n'))
+        }
+        throw new Error('프로젝트 생성 요청이 실패했습니다.')
+      }
+
+      if (!isGenerateSuccessResponse(generateData)) {
+        throw new Error('백엔드 응답 형식이 올바르지 않습니다.')
+      }
+
+      let downloadResponse: Response
+      try {
+        downloadResponse = await fetch(
+          getApiUrl(`/api/download/${encodeURIComponent(generateData.zipFileName)}`),
+        )
+      } catch (error) {
+        throw toNetworkError(error)
+      }
 
       if (!downloadResponse.ok) {
-        let detail = 'ZIP download request failed'
-        try {
-          const body = (await downloadResponse.json()) as GenerateResponse
-          if (body.message) {
-            detail = body.message
-          }
-        } catch {
-          // Keep fallback message when response is not JSON.
+        const downloadData = await parseJsonSafely(downloadResponse)
+        const errors = getErrorsFromResponse(downloadData)
+        if (errors.length > 0) {
+          throw new Error(errors.join('\n'))
         }
-        throw new Error(detail)
+        throw new Error('ZIP 다운로드 요청이 실패했습니다.')
       }
 
-      const blob = await downloadResponse.blob()
+      let blob: Blob
+      try {
+        blob = await downloadResponse.blob()
+      } catch {
+        throw new Error('ZIP 파일을 다운로드 형식으로 처리하지 못했습니다.')
+      }
+
+      if (blob.size <= 0) {
+        throw new Error('다운로드할 ZIP 파일이 비어 있습니다.')
+      }
+
       const downloadUrl = URL.createObjectURL(blob)
       const link = document.createElement('a')
 
       link.href = downloadUrl
       link.download = generateData.zipFileName
       document.body.appendChild(link)
-      link.click()
+      try {
+        link.click()
+      } catch {
+        throw new Error('브라우저 다운로드를 시작하지 못했습니다.')
+      }
       link.remove()
       URL.revokeObjectURL(downloadUrl)
 
-      setSuccessMessage(`ZIP downloaded: ${generateData.zipFileName}`)
+      setStatusMessage('')
+      setSuccessMessage(`${generateData.zipFileName} 다운로드가 시작되었습니다.`)
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to generate ZIP'
+      setStatusMessage('')
+      const message = toNetworkError(error).message
       setErrorMessage(message)
     } finally {
       setIsGenerating(false)
@@ -381,17 +477,25 @@ function App() {
             </button>
           </div>
 
-          {errorMessage ? (
-            <p className="status-message status-error" role="alert">
-              {errorMessage}
-            </p>
-          ) : null}
+          <div className="status-panel" aria-live="polite">
+            {statusMessage ? (
+              <p className="status-message status-info" role="status">
+                {statusMessage}
+              </p>
+            ) : null}
 
-          {successMessage ? (
-            <p className="status-message status-success" role="status">
-              {successMessage}
-            </p>
-          ) : null}
+            {errorMessage ? (
+              <p className="status-message status-error" role="alert">
+                {errorMessage}
+              </p>
+            ) : null}
+
+            {successMessage ? (
+              <p className="status-message status-success" role="status">
+                {successMessage}
+              </p>
+            ) : null}
+          </div>
         </form>
 
         <section className="panel">

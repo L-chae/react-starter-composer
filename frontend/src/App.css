@@ -119,9 +119,24 @@ button:disabled {
 }
 
 .status-message {
-  margin: 14px 0 0;
+  margin: 0;
   font-size: 14px;
-  line-height: 1.4;
+  line-height: 1.5;
+  white-space: pre-line;
+}
+
+.status-panel {
+  margin-top: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  display: grid;
+  gap: 8px;
+}
+
+.status-info {
+  color: #1d4ed8;
 }
 
 .status-error {
