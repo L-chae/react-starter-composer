@@ -3,6 +3,14 @@ import './App.css'
 
 type Language = 'ts' | 'js'
 type Styling = 'css' | 'tailwind'
+type GenerateResponse = {
+  ok: boolean
+  message?: string
+  errors?: string[]
+  zipFileName?: string
+}
+
+const BACKEND_BASE_URL = 'http://localhost:4000'
 
 function App() {
   const [projectName, setProjectName] = useState('my-react-app')
@@ -12,6 +20,9 @@ function App() {
   const [useZustand, setUseZustand] = useState(false)
   const [useLucide, setUseLucide] = useState(false)
   const [usePrettier, setUsePrettier] = useState(false)
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [successMessage, setSuccessMessage] = useState('')
 
   const preview = useMemo(() => {
     const safeProjectName = projectName.trim() || 'my-react-app'
@@ -143,6 +154,76 @@ function App() {
     setUseZustand(false)
     setUseLucide(false)
     setUsePrettier(false)
+    setErrorMessage('')
+    setSuccessMessage('')
+  }
+
+  const handleGenerateZip = async () => {
+    try {
+      setIsGenerating(true)
+      setErrorMessage('')
+      setSuccessMessage('')
+
+      const payload = {
+        projectName,
+        language,
+        styling,
+        useVitest,
+        useZustand,
+        useLucide,
+        usePrettier,
+      }
+
+      const generateResponse = await fetch(`${BACKEND_BASE_URL}/api/generate`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      })
+
+      const generateData = (await generateResponse.json()) as GenerateResponse
+
+      if (!generateResponse.ok || !generateData.ok || !generateData.zipFileName) {
+        const detail = generateData.errors?.join(', ') || generateData.message || 'Unknown error'
+        throw new Error(`Generate failed: ${detail}`)
+      }
+
+      const downloadResponse = await fetch(
+        `${BACKEND_BASE_URL}/api/download/${encodeURIComponent(generateData.zipFileName)}`,
+      )
+
+      if (!downloadResponse.ok) {
+        let detail = 'ZIP download request failed'
+        try {
+          const body = (await downloadResponse.json()) as GenerateResponse
+          if (body.message) {
+            detail = body.message
+          }
+        } catch {
+          // Keep fallback message when response is not JSON.
+        }
+        throw new Error(detail)
+      }
+
+      const blob = await downloadResponse.blob()
+      const downloadUrl = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+
+      link.href = downloadUrl
+      link.download = generateData.zipFileName
+      document.body.appendChild(link)
+      link.click()
+      link.remove()
+      URL.revokeObjectURL(downloadUrl)
+
+      setSuccessMessage(`ZIP downloaded: ${generateData.zipFileName}`)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Failed to generate ZIP'
+      setErrorMessage(message)
+    } finally {
+      setIsGenerating(false)
+    }
   }
 
   return (
@@ -291,10 +372,27 @@ function App() {
             <button type="button" className="secondary" onClick={resetOptions}>
               초기화
             </button>
-            <button type="button" className="primary">
-              Generate ZIP
+            <button
+              type="button"
+              className="primary"
+              onClick={handleGenerateZip}
+              disabled={isGenerating}
+            >
+              {isGenerating ? 'Generating...' : 'Generate ZIP'}
             </button>
           </div>
+
+          {errorMessage ? (
+            <p className="status-message status-error" role="alert">
+              {errorMessage}
+            </p>
+          ) : null}
+
+          {successMessage ? (
+            <p className="status-message status-success" role="status">
+              {successMessage}
+            </p>
+          ) : null}
         </form>
 
         <section className="panel">

@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const cors = require('cors');
 const express = require('express');
 const { buildComposerResult } = require('./composer');
@@ -6,9 +8,30 @@ const { zipGeneratedProject } = require('./zipper');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const ZIP_OUTPUT_ROOT = path.resolve(__dirname, '../output/zips');
 
 app.use(cors());
 app.use(express.json({ limit: '1mb' }));
+
+function isSafeZipFileName(zipFileName) {
+  if (typeof zipFileName !== 'string' || zipFileName.trim() === '') {
+    return false;
+  }
+
+  if (!zipFileName.toLowerCase().endsWith('.zip')) {
+    return false;
+  }
+
+  if (zipFileName !== path.basename(zipFileName)) {
+    return false;
+  }
+
+  if (zipFileName.includes('..') || zipFileName.includes('/') || zipFileName.includes('\\')) {
+    return false;
+  }
+
+  return /^[a-zA-Z0-9._-]+\.zip$/.test(zipFileName);
+}
 
 app.get('/health', (_req, res) => {
   res.json({ ok: true });
@@ -46,6 +69,36 @@ app.post('/api/generate', async (req, res) => {
       errors: [error.message],
     });
   }
+});
+
+app.get('/api/download/:zipFileName', (req, res) => {
+  const { zipFileName } = req.params;
+
+  if (!isSafeZipFileName(zipFileName)) {
+    return res.status(400).json({
+      ok: false,
+      message: 'Invalid zip file name',
+    });
+  }
+
+  const zipPath = path.resolve(ZIP_OUTPUT_ROOT, zipFileName);
+  const relative = path.relative(ZIP_OUTPUT_ROOT, zipPath);
+
+  if (relative.startsWith('..') || path.isAbsolute(relative)) {
+    return res.status(400).json({
+      ok: false,
+      message: 'Invalid zip file path',
+    });
+  }
+
+  if (!fs.existsSync(zipPath)) {
+    return res.status(404).json({
+      ok: false,
+      message: 'ZIP file not found',
+    });
+  }
+
+  return res.download(zipPath, zipFileName);
 });
 
 app.listen(PORT, () => {
