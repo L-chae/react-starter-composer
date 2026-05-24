@@ -5,6 +5,7 @@ const express = require('express');
 const { buildComposerResult } = require('./composer');
 const { generateProjectFromComposerResult } = require('./project-generator');
 const { zipGeneratedProject } = require('./zipper');
+const { validateDownloadZipFileName } = require('./download-validator');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -28,24 +29,15 @@ app.use(
 );
 app.use(express.json({ limit: '1mb' }));
 
-function isSafeZipFileName(zipFileName) {
-  if (typeof zipFileName !== 'string' || zipFileName.trim() === '') {
-    return false;
-  }
+function sendError(res, statusCode, errors) {
+  const normalizedErrors = Array.isArray(errors)
+    ? errors.filter((item) => typeof item === 'string' && item.trim() !== '')
+    : ['Unknown error'];
 
-  if (!zipFileName.toLowerCase().endsWith('.zip')) {
-    return false;
-  }
-
-  if (zipFileName !== path.basename(zipFileName)) {
-    return false;
-  }
-
-  if (zipFileName.includes('..') || zipFileName.includes('/') || zipFileName.includes('\\')) {
-    return false;
-  }
-
-  return /^[a-zA-Z0-9._-]+\.zip$/.test(zipFileName);
+  return res.status(statusCode).json({
+    ok: false,
+    errors: normalizedErrors.length > 0 ? normalizedErrors : ['Unknown error'],
+  });
 }
 
 app.get('/health', (_req, res) => {
@@ -54,14 +46,14 @@ app.get('/health', (_req, res) => {
 
 app.post('/api/generate', async (req, res) => {
   try {
+    if (!req.body || typeof req.body !== 'object' || Array.isArray(req.body)) {
+      return sendError(res, 400, ['Request body must be a JSON object.']);
+    }
+
     const composed = buildComposerResult(req.body);
 
     if (!composed.ok) {
-      return res.status(400).json({
-        ok: false,
-        message: 'Invalid generate request',
-        errors: composed.errors || [],
-      });
+      return sendError(res, 400, composed.errors || ['Invalid generate request.']);
     }
 
     const generated = generateProjectFromComposerResult(composed.result);
@@ -78,42 +70,67 @@ app.post('/api/generate', async (req, res) => {
       zipSizeBytes: zipped.sizeBytes,
     });
   } catch (error) {
-    return res.status(400).json({
-      ok: false,
-      message: 'Failed to build composer result',
-      errors: [error.message],
-    });
+    return sendError(res, 500, [error instanceof Error ? error.message : 'Internal server error.']);
   }
 });
 
 app.get('/api/download/:zipFileName', (req, res) => {
   const { zipFileName } = req.params;
+  const validation = validateDownloadZipFileName(zipFileName);
 
-  if (!isSafeZipFileName(zipFileName)) {
-    return res.status(400).json({
-      ok: false,
-      message: 'Invalid zip file name',
-    });
+  if (!validation.ok) {
+    return sendError(res, 400, [validation.error]);
   }
 
   const zipPath = path.resolve(ZIP_OUTPUT_ROOT, zipFileName);
   const relative = path.relative(ZIP_OUTPUT_ROOT, zipPath);
 
   if (relative.startsWith('..') || path.isAbsolute(relative)) {
-    return res.status(400).json({
-      ok: false,
-      message: 'Invalid zip file path',
-    });
+    return sendError(res, 400, ['Invalid zip file path.']);
   }
 
   if (!fs.existsSync(zipPath)) {
-    return res.status(404).json({
-      ok: false,
-      message: 'ZIP file not found',
-    });
+    return sendError(res, 404, ['ZIP file not found.']);
   }
 
-  return res.download(zipPath, zipFileName);
+  return res.download(zipPath, zipFileName, (error) => {
+    if (!error) {
+      return;
+    }
+
+    if (res.headersSent) {
+      return;
+    }
+
+    if (error.code === 'ENOENT') {
+      sendError(res, 404, ['ZIP file not found.']);
+      return;
+    }
+
+    sendError(res, 500, ['Failed to send ZIP file.']);
+  });
+});
+
+app.use((_req, res) => {
+  sendError(res, 404, ['Not found.']);
+});
+
+app.use((error, _req, res, _next) => {
+  if (res.headersSent) {
+    return;
+  }
+
+  if (error && error.type === 'entity.parse.failed') {
+    sendError(res, 400, ['Invalid JSON body.']);
+    return;
+  }
+
+  if (error && error.message === 'Not allowed by CORS') {
+    sendError(res, 400, ['Not allowed by CORS.']);
+    return;
+  }
+
+  sendError(res, 500, [error instanceof Error ? error.message : 'Internal server error.']);
 });
 
 app.listen(PORT, () => {

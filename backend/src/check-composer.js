@@ -3,6 +3,7 @@ const path = require('path');
 const { buildComposerResult, sanitizeProjectName } = require('./composer');
 const { generateProjectFromComposerResult } = require('./project-generator');
 const { zipGeneratedProject } = require('./zipper');
+const { validateDownloadZipFileName } = require('./download-validator');
 
 const BACKEND_ROOT = path.resolve(__dirname, '..');
 const TEMP_OUTPUT_ROOT = path.resolve(BACKEND_ROOT, 'output/temp');
@@ -107,11 +108,90 @@ function checkSanitizeDefaults() {
   assert(sanitizeProjectName('') === 'my-react-app', 'Empty projectName should default.');
 }
 
+function checkInvalidGenerateInputValidation() {
+  const invalidLanguage = buildComposerResult({
+    projectName: 'sample',
+    language: 'tsx',
+    styling: 'css',
+    useVitest: false,
+    useZustand: false,
+    useLucide: false,
+    usePrettier: false,
+  });
+  assert(!invalidLanguage.ok, 'Invalid language should fail validation.');
+  assert(
+    (invalidLanguage.errors || []).some((error) => error.includes('language')),
+    'Invalid language error message missing.',
+  );
+
+  const invalidStyling = buildComposerResult({
+    projectName: 'sample',
+    language: 'ts',
+    styling: 'scss',
+    useVitest: false,
+    useZustand: false,
+    useLucide: false,
+    usePrettier: false,
+  });
+  assert(!invalidStyling.ok, 'Invalid styling should fail validation.');
+  assert(
+    (invalidStyling.errors || []).some((error) => error.includes('styling')),
+    'Invalid styling error message missing.',
+  );
+
+  const invalidBoolean = buildComposerResult({
+    projectName: 'sample',
+    language: 'ts',
+    styling: 'css',
+    useVitest: 'true',
+    useZustand: false,
+    useLucide: false,
+    usePrettier: false,
+  });
+  assert(!invalidBoolean.ok, 'Non-boolean useVitest should fail validation.');
+  assert(
+    (invalidBoolean.errors || []).some((error) => error.includes('useVitest')),
+    'Non-boolean useVitest error message missing.',
+  );
+}
+
+function checkUnsafeProjectNameSanitize() {
+  const composed = buildComposerResult({
+    projectName: '!!!',
+    language: 'js',
+    styling: 'css',
+    useVitest: false,
+    useZustand: false,
+    useLucide: false,
+    usePrettier: false,
+  });
+
+  assert(composed.ok, 'Unsafe projectName sanitize case should still succeed.');
+  assert(composed.result.projectName === 'my-react-app', 'Unsafe projectName should fallback to my-react-app.');
+}
+
+function checkDownloadFilenameValidation() {
+  const valid = validateDownloadZipFileName('my-app.zip');
+  assert(valid.ok, 'Valid zip filename should pass validation.');
+
+  const invalidExt = validateDownloadZipFileName('my-app.txt');
+  assert(!invalidExt.ok, 'Non-zip extension should fail validation.');
+
+  const invalidTraversal = validateDownloadZipFileName('../bad.zip');
+  assert(!invalidTraversal.ok, 'Path traversal filename should fail validation.');
+
+  const invalidEncodedTraversal = validateDownloadZipFileName('%2e%2e%2fbad.zip');
+  assert(!invalidEncodedTraversal.ok, 'Encoded traversal filename should fail validation.');
+}
+
 async function main() {
   const runId = String(Date.now());
   await checkTsFullOptionsCase(runId);
   await checkJsBaseOnlyCase(runId);
   checkSanitizeDefaults();
+  checkInvalidGenerateInputValidation();
+  checkUnsafeProjectNameSanitize();
+  checkDownloadFilenameValidation();
   console.log('composer check passed');
 }
 
