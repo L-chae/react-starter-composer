@@ -2,7 +2,7 @@
 
 React Starter Composer는 GUI 기반 React + Vite 스타터 생성기입니다.  
 사용자가 옵션을 선택하면 예상 파일 구조, 설치 명령어, `package.json scripts`를 미리 보여주고,
-backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성하는 것을 목표로 합니다.
+backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성하고 ZIP까지 준비하는 것을 목표로 합니다.
 
 ## 현재 구현 완료 기능
 
@@ -13,12 +13,14 @@ backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성하
 - composer result 기반 실제 파일 생성 완료
   - 생성 경로: `backend/output/temp/{projectName}`
   - 응답에 `outputPath`, `generatedFiles` 포함
+- 생성된 프로젝트 기반 ZIP 생성 완료
+  - 생성 경로: `backend/output/zips/{projectName}.zip`
+  - 응답에 `zipPath`, `zipFileName`, `zipSizeBytes` 포함
 
 ## 아직 미구현 기능
 
-- ZIP 생성
-- 브라우저 다운로드 응답 처리
-- frontend `Generate ZIP` 버튼의 실제 backend 연결/다운로드 플로우
+- frontend `Generate ZIP` 버튼의 실제 API 연결
+- 브라우저 blob 다운로드 처리
 - 배포
 
 ## 프로젝트 구조
@@ -93,17 +95,21 @@ curl -X POST http://localhost:4000/api/generate \
 ```json
 {
   "ok": true,
-  "message": "Project files generated",
+  "message": "Project files generated and zipped",
   "result": { "...": "composer result" },
   "outputPath": "backend/output/temp/my-react-app",
-  "generatedFiles": ["package.json", "src/main.tsx", "..."]
+  "generatedFiles": ["package.json", "src/main.tsx", "..."],
+  "zipPath": "backend/output/zips/my-react-app.zip",
+  "zipFileName": "my-react-app.zip",
+  "zipSizeBytes": 1234
 }
 ```
 
 ## 생성 결과 위치
 
 - 생성 프로젝트 폴더: `backend/output/temp/{projectName}`
-- 위 경로는 `.gitignore` 대상이며 Git 추적 대상이 아닙니다.
+- 생성 ZIP 파일: `backend/output/zips/{projectName}.zip`
+- 위 경로들은 `.gitignore` 대상이며 Git 추적 대상이 아닙니다.
 
 ## 개발 로드맵
 
@@ -113,8 +119,8 @@ curl -X POST http://localhost:4000/api/generate \
 - [x] Phase 4: templates manifest structure
 - [x] Phase 5: manifest-driven composer result 생성
 - [x] Phase 6: composer result 기반 프로젝트 파일 생성
-- [ ] Next Phase: ZIP 생성 로직
-- [ ] 이후: frontend-backend 다운로드 플로우 연결
+- [x] Phase 7: ZIP 생성 로직
+- [ ] Next Phase: frontend-backend download integration
 
 ## 제외 범위
 
