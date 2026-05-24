@@ -4,13 +4,19 @@ React Starter Composer는 GUI 기반 React + Vite 스타터 생성기입니다.
 사용자가 옵션을 선택하면 예상 파일 구조, 설치 명령어, `package.json scripts`를 미리 보여주고,
 backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성한 뒤 ZIP을 내려받을 수 있게 하는 것을 목표로 합니다.
 
-현재 문서는 **local development 기준**이며, Vercel + Render 배포 준비 정보를 포함합니다.
+현재 문서는 **배포 완료 상태(v1)** 기준입니다.
+
+## Live Demo
+
+- Frontend (Vercel): `https://your-vercel-domain.vercel.app` (replace with your real URL)
+- Backend Health (Render): `https://react-starter-composer-backend.onrender.com/health`
 
 ## 현재 구현 완료 기능
 
 - Frontend Preview UI 구현 완료 (`frontend`)
 - Backend `GET /health` 엔드포인트 구현 완료
 - Backend `POST /api/generate` 엔드포인트 구현 완료
+- Backend `GET /api/download/:zipFileName` 엔드포인트 구현 완료
 - `templates/manifest.json` 기반 composer result 생성 완료
 - composer result 기반 실제 파일 생성 완료
   - 생성 경로: `backend/output/temp/{projectName}`
@@ -23,11 +29,29 @@ backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성한
   - backend 생성 완료 후 download endpoint 호출
   - 브라우저에서 ZIP 파일 다운로드 트리거
 
-## 아직 미구현 기능
+## 핵심 기능 요약
 
-- 배포 검증 완료(운영 점검)
-- 추가 옵션/템플릿 조합 확장
-- UI polish 및 사용자 경험 개선
+- 옵션 선택 (language, styling, optional tools)
+- 파일 구조 preview
+- install commands preview
+- `package.json scripts` preview
+- 프로젝트 ZIP 생성 및 다운로드
+
+## Architecture
+
+- Frontend: React + Vite + TypeScript, deployed on Vercel
+- Backend: Node.js + Express API, deployed on Render
+- Templates: manifest 기반 base/options 조합으로 프로젝트 생성
+
+## Current Status
+
+- `v1 deployed`
+- End-to-end flow works in deployed environment:
+  - option selection -> generate -> zip download
+- Future work:
+  - domain/theme 확장
+  - additional template options
+  - UX polish
 
 ## 프로젝트 구조
 
@@ -68,7 +92,9 @@ npm run check
 
 브라우저에서 frontend에 접속한 뒤 옵션을 선택하고 `Generate ZIP`을 클릭하면 ZIP이 다운로드됩니다.
 
-## Backend Deployment (Render)
+## Deployment
+
+### Backend deployment on Render
 
 - Root Directory: `backend`
 - Build Command: `npm install`
@@ -77,7 +103,7 @@ npm run check
   - `PORT`: Render가 자동 제공하므로 수동 설정 불필요
   - `CORS_ORIGIN=https://your-vercel-domain.vercel.app`
 
-## Frontend Deployment (Vercel)
+### Frontend deployment on Vercel
 
 - Root Directory: `frontend`
 - Build Command: `npm run build`
@@ -161,6 +187,15 @@ curl -X POST http://localhost:4000/api/generate \
 - [x] Phase 8: frontend-backend download integration
 - [x] Phase 9-B: frontend error/loading UX polish
 - [ ] Next Phase: deployment verification / portfolio polish
+
+## Portfolio Summary
+
+이 프로젝트는 다음 역량을 보여줍니다.
+- React + TypeScript 기반 상태 관리 및 사용자 흐름 설계
+- Express API 설계/검증/예외 처리
+- 템플릿 기반 파일 생성 및 ZIP 파이프라인 구현
+- frontend-backend 연동과 배포 환경(Vercel/Render) 구성
+- 실서비스 관점의 안정화(입력 검증, 에러 응답, CORS, env 분리)
 
 ## 제외 범위
 
