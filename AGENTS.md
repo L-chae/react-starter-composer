@@ -13,11 +13,12 @@
   - templates manifest structure
   - manifest-driven composer result generation
   - project file generation to `backend/output/temp/{projectName}`
-- Next:
   - Phase 7 ZIP generation
+- Next:
+  - Phase 8 frontend-backend download integration
 - Not yet:
-  - frontend `Generate ZIP` 버튼 실제 연결
-  - browser download flow
+  - frontend `Generate ZIP` 버튼과 backend API 실연결
+  - browser blob download flow
 
 ## 3. Directory Rules
 - `frontend/`: UI와 preview 상태 관리
@@ -37,8 +38,8 @@
 - React + TypeScript + Vite를 유지한다.
 - 외부 UI 라이브러리 추가를 금지한다.
 - plain CSS를 유지한다.
-- Phase 7 동안 frontend 연결 작업을 금지한다.
-- 브라우저 다운로드 연결은 다음 Phase에서 진행한다.
+- Phase 8에서는 `Generate ZIP` 버튼을 backend API와 연결할 수 있다.
+- Phase 8에서는 browser blob 다운로드 처리를 구현할 수 있다.
 
 ## 6. Backend Rules
 - Node.js + Express를 유지한다.
@@ -46,9 +47,9 @@
 - 생성 프로젝트 의존성은 README/installCommands로 안내한다.
 - composer 로직을 ZIP 로직보다 먼저 구현한다.
 - `fs-extra`는 composer phase에서 필요 시 추가 가능하다.
-- Phase 7에서는 `archiver` 도입이 가능하다.
-- ZIP 생성 경로는 `backend/output/zips`로 고정한다.
-- ZIP 내부 루트에는 `package.json`, `src/`, `README.md`가 바로 보이게 한다.
+- ZIP 생성 로직은 구현 완료 상태로 유지한다.
+- ZIP 생성 경로는 `backend/output/zips`로 유지한다.
+- ZIP 내부 루트에는 `package.json`, `src/`, `README.md`가 바로 보이게 유지한다.
 
 ## 6-1. Output Rules
 - 프로젝트 생성물: `backend/output/temp`
@@ -76,6 +77,11 @@
 - 모든 React 라이브러리 조합 지원
 
 ## 9. Validation Commands
+- frontend build
+```bash
+cd frontend
+npm run build
+```
 - backend
 ```bash
 cd backend
@@ -86,7 +92,7 @@ npm run check
 cd backend
 npm run dev
 ```
-- generate API (Phase 7 예정 확인)
+- generate API 확인
 - `POST /api/generate` 응답에서 `zipPath`, `zipFileName`, `zipSizeBytes` 확인
 - git
 ```bash
