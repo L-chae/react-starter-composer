@@ -15,11 +15,12 @@
   - project file generation to `backend/output/temp/{projectName}`
   - Phase 7 ZIP generation
   - Phase 8 frontend-backend download integration
+  - Phase 9-B frontend error/loading UX polish
 - Next:
-  - Phase 9 polish, validation, portfolio preparation
+  - Phase 9-D deploy readiness
 - Not yet:
-  - production deployment
-  - optional feature expansion beyond current scope
+  - deployment verification (Vercel + Render)
+  - portfolio polish
 
 ## 3. Directory Rules
 - `frontend/`: UI와 preview 상태 관리
@@ -37,6 +38,7 @@
 - Phase 9에서는 기능 확장보다 안정화를 우선한다.
 - 대규모 구조 변경을 금지한다.
 - 기존 동작을 깨지 않는 개선만 진행한다.
+- 배포 전에는 기능 확장을 금지하고 안정화/검증을 우선한다.
 
 ## 5. Frontend Rules
 - React + TypeScript + Vite를 유지한다.

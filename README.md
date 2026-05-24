@@ -4,7 +4,7 @@ React Starter Composer는 GUI 기반 React + Vite 스타터 생성기입니다.
 사용자가 옵션을 선택하면 예상 파일 구조, 설치 명령어, `package.json scripts`를 미리 보여주고,
 backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성한 뒤 ZIP을 내려받을 수 있게 하는 것을 목표로 합니다.
 
-현재 문서는 **local development 기준**입니다.
+현재 문서는 **local development 기준**이며, Vercel + Render 배포 준비 정보를 포함합니다.
 
 ## 현재 구현 완료 기능
 
@@ -25,7 +25,7 @@ backend에서 템플릿 조합 결과를 실제 프로젝트 폴더로 생성한
 
 ## 아직 미구현 기능
 
-- 배포
+- 배포 검증 완료(운영 점검)
 - 추가 옵션/템플릿 조합 확장
 - UI polish 및 사용자 경험 개선
 
@@ -41,7 +41,7 @@ react-starter-composer/
 └─ README.md
 ```
 
-## 실행 방법
+## Local Development 실행 순서
 
 ### 1) Backend 실행
 
@@ -59,7 +59,7 @@ npm install
 npm run dev
 ```
 
-### 3) 검증
+### 3) Backend 검증
 
 ```bash
 cd backend
@@ -67,6 +67,23 @@ npm run check
 ```
 
 브라우저에서 frontend에 접속한 뒤 옵션을 선택하고 `Generate ZIP`을 클릭하면 ZIP이 다운로드됩니다.
+
+## Backend Deployment (Render)
+
+- Root Directory: `backend`
+- Build Command: `npm install`
+- Start Command: `npm start`
+- Environment Variables:
+  - `PORT`: Render가 자동 제공하므로 수동 설정 불필요
+  - `CORS_ORIGIN=https://your-vercel-domain.vercel.app`
+
+## Frontend Deployment (Vercel)
+
+- Root Directory: `frontend`
+- Build Command: `npm run build`
+- Output Directory: `dist`
+- Environment Variables:
+  - `VITE_API_BASE_URL=https://your-render-backend.onrender.com`
 
 ## API 설명
 
@@ -125,6 +142,13 @@ curl -X POST http://localhost:4000/api/generate \
 - 생성 ZIP 파일: `backend/output/zips/{projectName}.zip`
 - 위 경로들은 `.gitignore` 대상이며 Git 추적 대상이 아닙니다.
 
+## 배포 후 테스트 체크리스트
+
+- Render 배포 URL에서 `/health` 응답 확인
+- Vercel 배포 화면에서 `Generate ZIP` 클릭
+- ZIP 다운로드가 정상적으로 시작되는지 확인
+- 브라우저 콘솔/네트워크에서 CORS 오류가 없는지 확인
+
 ## 개발 로드맵
 
 - [x] Phase 1: project setup
@@ -135,7 +159,8 @@ curl -X POST http://localhost:4000/api/generate \
 - [x] Phase 6: composer result 기반 프로젝트 파일 생성
 - [x] Phase 7: ZIP 생성 로직
 - [x] Phase 8: frontend-backend download integration
-- [ ] Next Phase: polish/testing/portfolio preparation
+- [x] Phase 9-B: frontend error/loading UX polish
+- [ ] Next Phase: deployment verification / portfolio polish
 
 ## 제외 범위
 
