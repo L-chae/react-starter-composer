@@ -8,9 +8,24 @@ const { zipGeneratedProject } = require('./zipper');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
+const CORS_ORIGIN = process.env.CORS_ORIGIN || '';
 const ZIP_OUTPUT_ROOT = path.resolve(__dirname, '../output/zips');
 
-app.use(cors());
+app.use(
+  cors({
+    origin(origin, callback) {
+      if (!CORS_ORIGIN) {
+        return callback(null, true);
+      }
+
+      if (!origin || origin === CORS_ORIGIN) {
+        return callback(null, true);
+      }
+
+      return callback(new Error('Not allowed by CORS'));
+    },
+  }),
+);
 app.use(express.json({ limit: '1mb' }));
 
 function isSafeZipFileName(zipFileName) {

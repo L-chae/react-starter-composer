@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import './App.css'
+import { getApiUrl } from './config/api'
 
 type Language = 'ts' | 'js'
 type Styling = 'css' | 'tailwind'
@@ -9,8 +10,6 @@ type GenerateResponse = {
   errors?: string[]
   zipFileName?: string
 }
-
-const BACKEND_BASE_URL = 'http://localhost:4000'
 
 function App() {
   const [projectName, setProjectName] = useState('my-react-app')
@@ -174,7 +173,7 @@ function App() {
         usePrettier,
       }
 
-      const generateResponse = await fetch(`${BACKEND_BASE_URL}/api/generate`, {
+      const generateResponse = await fetch(getApiUrl('/api/generate'), {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -190,7 +189,7 @@ function App() {
       }
 
       const downloadResponse = await fetch(
-        `${BACKEND_BASE_URL}/api/download/${encodeURIComponent(generateData.zipFileName)}`,
+        getApiUrl(`/api/download/${encodeURIComponent(generateData.zipFileName)}`),
       )
 
       if (!downloadResponse.ok) {
