@@ -1,95 +1,126 @@
 # React Starter Composer
 
-React Starter Composer는 **React + Vite 프로젝트를 GUI에서 조립하고 ZIP으로 다운로드할 수 있는 스타터 생성기**입니다.
-
-사용자는 화면에서 원하는 개발 환경을 선택할 수 있습니다.
-
-- JavaScript / TypeScript
-- Basic CSS / Tailwind CSS
-- Vitest
-- Zustand
-- Lucide React
-- Prettier
-
-선택한 옵션에 따라 예상 파일 구조, 설치 명령어, `package.json scripts`를 미리 확인할 수 있습니다.  
-백엔드는 선택값을 바탕으로 템플릿을 조합하고, 실제 프로젝트 폴더와 ZIP 파일을 생성합니다.
+GUI에서 옵션을 선택해 **React + Vite 스타터 프로젝트를 생성하고 ZIP으로 다운로드할 수 있는 개발 도구**입니다.
 
 현재 문서는 **v1 배포 완료 상태**를 기준으로 작성되었습니다.
 
+[![Vercel](https://img.shields.io/badge/Frontend-Vercel-000000?style=flat-square&logo=vercel&logoColor=white)](https://react-starter-composer.vercel.app)
+[![Render](https://img.shields.io/badge/Backend-Render-46E3B7?style=flat-square&logo=render&logoColor=white)](https://react-starter-composer-backend.onrender.com/health)
+
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)
+
 ---
 
-## 배포 링크
+## Overview
 
-- **프론트엔드 (UI)**: [![Vercel](https://img.shields.io/badge/Vercel-Deploy-black?style=flat-square&logo=vercel)](https://react-starter-composer.vercel.app)
-- **백엔드 (API 상태)**: [![Render](https://img.shields.io/badge/Render-Health_Check-46E3B7?style=flat-square&logo=render&logoColor=white)](https://react-starter-composer-backend.onrender.com/health)
+React Starter Composer는 반복적인 React 프로젝트 초기 설정을 줄이기 위해 만든 스타터 생성기입니다.
+
+사용자는 화면에서 언어, 스타일링, 테스트 도구, 상태 관리 도구 등을 선택하고, 선택 결과에 따라 생성될 파일 구조와 설치 명령어를 미리 확인할 수 있습니다. 이후 백엔드는 선택값을 기반으로 템플릿을 조합해 실제 프로젝트 폴더와 ZIP 파일을 생성합니다.
+
+이 프로젝트는 단순한 정적 UI가 아니라, **프론트엔드 옵션 선택 → 백엔드 템플릿 조합 → 프로젝트 파일 생성 → ZIP 다운로드**까지 이어지는 전체 흐름을 구현하는 데 초점을 두었습니다.
 
 ---
 
-## 핵심 기능
+## Key Features
 
 - GUI 기반 React 스타터 옵션 선택
-- 선택값에 따른 파일 구조 미리보기
-- 선택값에 따른 설치 명령어 미리보기
-- 선택값에 따른 `package.json scripts` 미리보기
-- manifest 기반 템플릿 조합
-- 실제 프로젝트 폴더 생성
-- ZIP 파일 생성 및 다운로드
-- 프론트엔드-백엔드 연동
-- 배포 환경 대응을 위한 환경변수 분리
-- 입력값 검증 및 에러 응답 처리
+- JavaScript / TypeScript 선택 지원
+- Basic CSS / Tailwind CSS 선택 지원
+- Vitest, Zustand, Lucide React, Prettier 옵션 지원
+- 선택값 기반 파일 구조, 설치 명령어, `package.json scripts` 미리보기
+- 프론트엔드-백엔드 API 연동
+- `manifest.json` 기반 템플릿 조합
+- 실제 프로젝트 폴더 및 README 생성
+- ZIP 파일 생성 및 브라우저 다운로드
+- 로딩 / 성공 / 에러 상태 UI 처리
+- 입력값 검증 및 일관된 에러 응답 처리
+- Vercel / Render 배포 환경 대응
 
 ---
 
-## 현재 구현 완료 기능
+## Technical Highlights
 
-### 프론트엔드
+### Manifest 기반 템플릿 조합
 
-- React + Vite + TypeScript 기반 Preview UI
-- 프로젝트 이름, 언어, 스타일링, 옵션 선택
-- 선택값에 따른 파일 구조 / 설치 명령어 / `package.json scripts` 미리보기
-- `Generate ZIP` 버튼을 통한 백엔드 API 호출 및 ZIP 다운로드
-- 로딩 / 성공 / 에러 상태 메시지 표시
+옵션별 파일과 의존성을 하드코딩하지 않고 `templates/manifest.json`을 기준으로 관리했습니다. 이를 통해 새로운 옵션을 추가할 때 생성 로직 전체를 수정하지 않고, manifest와 템플릿 파일을 확장하는 방식으로 대응할 수 있도록 구성했습니다.
 
-### 백엔드
+### Preview UI와 생성 결과 동기화
 
-- Express 기반 API 서버
-- `GET /health`, `POST /api/generate`, `GET /api/download/:zipFileName`
-- 요청 body 검증, 프로젝트 이름 sanitize, 다운로드 파일명 검증
-- path traversal 방지 및 일관된 JSON 에러 응답 처리
+사용자가 선택한 옵션에 따라 예상 파일 구조, 설치 명령어, `package.json scripts`가 즉시 변경되도록 구현했습니다. 실제 ZIP 생성 전에 결과를 미리 확인할 수 있어 사용자가 생성 결과를 예측할 수 있습니다.
 
-### 템플릿 / 생성 로직
+### 프로젝트 파일 생성 및 ZIP 압축 처리
 
-- `templates/manifest.json` 기반 옵션 관리
-- base template과 option template 조합
-- 선택 옵션 기반 실제 프로젝트 파일 생성
-- `package.json` dependencies / devDependencies / scripts 병합
-- 생성된 프로젝트 README 작성 및 ZIP 압축
+백엔드는 선택된 옵션을 바탕으로 base template과 option template을 조합하고, 실제 프로젝트 폴더를 생성한 뒤 `archiver`를 사용해 ZIP 파일로 압축합니다. 생성된 ZIP은 다운로드 API를 통해 브라우저에서 받을 수 있습니다.
+
+### 입력값 검증과 경로 보안 처리
+
+프로젝트 이름을 sanitize하고, 다운로드 파일명을 검증해 잘못된 파일명이나 path traversal 시도를 차단했습니다. API 에러는 일관된 JSON 형태로 반환되도록 정리했습니다.
+
+### 배포 환경 분리
+
+프론트엔드와 백엔드를 각각 Vercel, Render에 배포하고, 로컬과 배포 환경의 API 주소 및 CORS 설정을 환경변수로 분리했습니다.
 
 ---
 
-## 동작 흐름
+## How It Works
 
 ```txt
-사용자가 옵션 선택
-→ 파일 구조 / 설치 명령어 / scripts 미리보기
-→ Generate ZIP 클릭
-→ 프론트엔드가 백엔드 API 호출
-→ 백엔드가 manifest 기반으로 템플릿 조합
-→ 실제 프로젝트 폴더 생성
-→ ZIP 파일 생성
-→ 프론트엔드가 ZIP 다운로드 요청
-→ 브라우저에서 ZIP 다운로드
+사용자 옵션 선택
+        ↓
+Preview UI 갱신
+파일 구조 / 설치 명령어 / scripts 미리보기
+        ↓
+Generate ZIP 클릭
+        ↓
+프론트엔드에서 POST /api/generate 요청
+        ↓
+백엔드에서 manifest 기반 템플릿 조합
+        ↓
+프로젝트 폴더 생성
+        ↓
+ZIP 파일 생성
+        ↓
+프론트엔드에서 다운로드 API 호출
+        ↓
+브라우저에서 ZIP 다운로드
 ```
 
 ---
 
-## 프로젝트 구조
+## Tech Stack
+
+### Frontend
+
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![CSS](https://img.shields.io/badge/CSS-1572B6?style=flat-square&logo=css3&logoColor=white)
+
+### Backend
+
+![Node.js](https://img.shields.io/badge/Node.js-339933?style=flat-square&logo=nodedotjs&logoColor=white)
+![Express](https://img.shields.io/badge/Express-000000?style=flat-square&logo=express&logoColor=white)
+![archiver](https://img.shields.io/badge/archiver-ZIP%20generation-6B7280?style=flat-square)
+![fs/path](https://img.shields.io/badge/fs%20%2F%20path-File%20system-6B7280?style=flat-square)
+
+### Deployment
+
+![Vercel](https://img.shields.io/badge/Vercel-000000?style=flat-square&logo=vercel&logoColor=white)
+![Render](https://img.shields.io/badge/Render-46E3B7?style=flat-square&logo=render&logoColor=white)
+
+---
+
+## Project Structure
 
 ```txt
 react-starter-composer/
 ├─ frontend/               # React + Vite + TypeScript 프론트엔드
-├─ backend/                # Express API, composer, project generator, ZIP 생성
-├─ templates/              # base 템플릿, option 템플릿, manifest
+├─ backend/                # Express API, composer, generator, ZIP 처리
+├─ templates/              # base template, option template, manifest
 ├─ .gitignore
 ├─ AGENTS.md
 └─ README.md
@@ -97,32 +128,9 @@ react-starter-composer/
 
 ---
 
-## 기술 스택
+## Getting Started
 
-### 프론트엔드
-
-* React
-* TypeScript
-* Vite
-* CSS
-
-### 백엔드
-
-* Node.js
-* Express
-* archiver
-* fs / path 기반 파일 처리
-
-### 배포
-
-* Frontend: Vercel
-* Backend: Render
-
----
-
-## 로컬 실행 방법
-
-### 1. 백엔드 실행
+### 1. Backend 실행
 
 ```bash
 cd backend
@@ -130,7 +138,7 @@ npm install
 npm run dev
 ```
 
-기본 실행 주소:
+기본 실행 주소는 다음과 같습니다.
 
 ```txt
 http://localhost:4000
@@ -148,9 +156,7 @@ curl http://localhost:4000/health
 { "ok": true }
 ```
 
----
-
-### 2. 프론트엔드 실행
+### 2. Frontend 실행
 
 ```bash
 cd frontend
@@ -158,7 +164,7 @@ npm install
 npm run dev
 ```
 
-기본 실행 주소:
+기본 실행 주소는 다음과 같습니다.
 
 ```txt
 http://localhost:5173
@@ -168,95 +174,50 @@ http://localhost:5173
 
 ---
 
-### 3. 백엔드 검증
+## Environment Variables
 
-```bash
-cd backend
-npm run check
-```
+### Frontend
 
-이 명령어는 다음 내용을 검증합니다.
-
-* TypeScript 풀옵션 프로젝트 생성
-* JavaScript 기본 프로젝트 생성
-* ZIP 파일 생성
-* 잘못된 입력값 처리
-* 잘못된 다운로드 파일명 차단
-
----
-
-## 환경변수 설정
-
-### 프론트엔드 환경변수
-
-파일 예시:
-
-```txt
-frontend/.env.example
-```
-
-내용:
+`frontend/.env.example`
 
 ```env
 VITE_API_BASE_URL=http://localhost:4000
 ```
 
-배포 환경에서는 Vercel에 아래 값을 등록합니다.
+배포 환경에서는 Vercel에 다음 값을 등록합니다.
 
 ```env
 VITE_API_BASE_URL=https://react-starter-composer-backend.onrender.com
 ```
 
----
+### Backend
 
-### 백엔드 환경변수
-
-파일 예시:
-
-```txt
-backend/.env.example
-```
-
-내용:
+`backend/.env.example`
 
 ```env
 PORT=4000
 CORS_ORIGIN=http://localhost:5173
 ```
 
-배포 환경에서는 Render에 아래 값을 등록합니다.
+배포 환경에서는 Render에 다음 값을 등록합니다.
 
 ```env
 CORS_ORIGIN=https://react-starter-composer.vercel.app
 ```
 
-`PORT`는 Render가 자동으로 제공하므로 직접 설정하지 않아도 됩니다.
+Render는 `PORT`를 자동으로 제공하므로 배포 환경에서는 직접 설정하지 않아도 됩니다.
 
 ---
 
-## API 설명
+## API Reference
 
-### GET /health
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| `GET` | `/health` | 백엔드 서버 상태 확인 |
+| `POST` | `/api/generate` | 선택 옵션 기반 프로젝트 파일 및 ZIP 생성 |
+| `GET` | `/api/download/:zipFileName` | 생성된 ZIP 파일 다운로드 |
 
-백엔드 서버가 정상 실행 중인지 확인하는 API입니다.
-
-```bash
-curl http://localhost:4000/health
-```
-
-응답 예시:
-
-```json
-{
-  "ok": true
-}
-```
-
----
-
-### POST /api/generate
-
-사용자가 선택한 옵션을 기반으로 프로젝트 파일과 ZIP 파일을 생성하는 API입니다.
+### POST `/api/generate`
 
 요청 예시:
 
@@ -289,11 +250,7 @@ curl -X POST http://localhost:4000/api/generate \
 }
 ```
 
----
-
-### GET /api/download/:zipFileName
-
-생성된 ZIP 파일을 다운로드하는 API입니다.
+### GET `/api/download/:zipFileName`
 
 예시:
 
@@ -303,13 +260,13 @@ GET /api/download/my-react-app.zip
 
 동작 방식:
 
-* 정상 파일이면 ZIP 다운로드 반환
-* 잘못된 파일명은 `400`
-* 존재하지 않는 ZIP 파일은 `404`
+- 정상 파일이면 ZIP 다운로드 반환
+- 잘못된 파일명은 `400` 응답 반환
+- 존재하지 않는 ZIP 파일은 `404` 응답 반환
 
 ---
 
-## 생성 결과 위치
+## Output Directory
 
 백엔드에서 생성되는 파일은 아래 경로에 저장됩니다.
 
@@ -318,15 +275,32 @@ backend/output/temp/{projectName}
 backend/output/zips/{projectName}.zip
 ```
 
-이 경로들은 `.gitignore`에 포함되어 있어 Git에 올라가지 않습니다.
+해당 경로는 `.gitignore`에 포함되어 Git에 올라가지 않습니다.
 
 ---
 
-## 배포 설정
+## Validation
 
-### 백엔드 배포: Render
+백엔드 검증 명령어:
 
-Render 설정:
+```bash
+cd backend
+npm run check
+```
+
+검증 항목:
+
+- TypeScript 풀옵션 프로젝트 생성
+- JavaScript 기본 프로젝트 생성
+- ZIP 파일 생성
+- 잘못된 입력값 처리
+- 잘못된 다운로드 파일명 차단
+
+---
+
+## Deployment
+
+### Backend: Render
 
 ```txt
 Root Directory: backend
@@ -340,17 +314,13 @@ Start Command: npm start
 CORS_ORIGIN=https://react-starter-composer.vercel.app
 ```
 
-배포 후 확인:
+배포 후 상태 확인:
 
 ```bash
 curl https://react-starter-composer-backend.onrender.com/health
 ```
 
----
-
-### 프론트엔드 배포: Vercel
-
-Vercel 설정:
+### Frontend: Vercel
 
 ```txt
 Root Directory: frontend
@@ -366,96 +336,66 @@ VITE_API_BASE_URL=https://react-starter-composer-backend.onrender.com
 
 ---
 
-## 배포 후 테스트 체크리스트
+## Deployment Checklist
 
-* [ ] Render 백엔드 `/health` 응답 확인
-* [ ] Vercel 프론트 화면 접속 확인
-* [ ] 옵션 선택 후 `Generate ZIP` 클릭
-* [ ] ZIP 파일 다운로드 확인
-* [ ] 압축 해제 후 `package.json`, `README.md`, `src/` 확인
-* [ ] 브라우저 콘솔에서 CORS 오류 없는지 확인
-
----
-
-## 개발 로드맵
-
-* [x] Phase 1: 프로젝트 기본 구조 생성
-* [x] Phase 2: 프론트엔드 Preview UI 구현
-* [x] Phase 3: 백엔드 Express 서버 뼈대 구현
-* [x] Phase 4: 템플릿 manifest 구조 설계
-* [x] Phase 5: manifest 기반 composer result 생성
-* [x] Phase 6: composer result 기반 프로젝트 파일 생성
-* [x] Phase 7: ZIP 생성 로직 구현
-* [x] Phase 8: 프론트엔드-백엔드 다운로드 연동
-* [x] Phase 9-1: env / CORS / PORT 배포 설정
-* [x] Phase 9-2: 백엔드 입력 검증 강화
-* [x] Phase 9-3: 프론트엔드 에러 / 로딩 UX 개선
-* [x] Phase 9-4: 배포 검증 및 포트폴리오 README 정리
-* [ ] Next Phase: 2차 확장 (도메인/테마/템플릿 엔진)
+- [ ] Render 백엔드 `/health` 응답 확인
+- [ ] Vercel 프론트엔드 접속 확인
+- [ ] 옵션 선택 후 `Generate ZIP` 실행 확인
+- [ ] ZIP 파일 다운로드 확인
+- [ ] 압축 해제 후 `package.json`, `README.md`, `src/` 확인
+- [ ] 브라우저 콘솔에서 CORS 오류 여부 확인
 
 ---
 
-## 포트폴리오 요약
-
-이 프로젝트는 React 프로젝트 초기 설정을 GUI에서 선택하고, 선택 결과를 실제 파일과 ZIP으로 생성하는 개발 도구입니다.
-
-단순한 화면 구현보다 다음 흐름을 중점적으로 다뤘습니다.
-
-- 옵션 선택에 따른 미리보기 UI 구성
-- 프론트엔드와 백엔드 API 연동
-- manifest 기반 템플릿 조합
-- 프로젝트 파일 생성 및 ZIP 다운로드 처리
-- 입력값 검증과 에러 응답 처리
-- Vercel / Render 기반 배포 환경 구성
-
----
-
-## 제외한 범위
+## Scope
 
 v1에서는 아래 기능을 의도적으로 제외했습니다.
 
-* Next.js 지원
-* Jest 지원
-* Redux Toolkit 지원
-* 서버에서 `npm install` 실행
-* 자동 dependency version update
-* 모든 React 라이브러리 조합 지원
+- Next.js 지원
+- Jest 지원
+- Redux Toolkit 지원
+- 서버에서 `npm install` 실행
+- 자동 dependency version update
+- 모든 React 라이브러리 조합 지원
 
 이 프로젝트는 모든 도구를 지원하는 범용 생성기가 아니라, **React + Vite 기준의 핵심 개발 환경을 안정적으로 조립하는 도구**를 목표로 합니다.
 
 ---
 
-## 앞으로의 확장 계획
+## Roadmap
 
-v1 이후에는 다음 기능을 추가할 수 있습니다.
+- [x] 프로젝트 기본 구조 생성
+- [x] 프론트엔드 Preview UI 구현
+- [x] 백엔드 Express API 구현
+- [x] 템플릿 manifest 구조 설계
+- [x] manifest 기반 composer result 생성
+- [x] composer result 기반 프로젝트 파일 생성
+- [x] ZIP 생성 로직 구현
+- [x] 프론트엔드-백엔드 다운로드 연동
+- [x] env / CORS / PORT 배포 설정
+- [x] 백엔드 입력 검증 강화
+- [x] 프론트엔드 에러 / 로딩 UX 개선
+- [x] Vercel / Render 배포 검증
+- [ ] 도메인 기반 스타터 추가
+- [ ] 테마 선택 기능 추가
+- [ ] 템플릿 엔진 방식 도입
+- [ ] 생성 프로젝트용 `LEARN.md` 자동 생성
 
-### 1. 도메인 기반 스타터
+---
 
-예시:
+## Future Improvements
 
-* 쇼핑몰
-* 대시보드
-* 블로그
-* 포트폴리오
+### 도메인 기반 스타터
 
-도메인을 선택하면 해당 목적에 맞는 폴더 구조와 예제 컴포넌트를 생성할 수 있습니다.
+쇼핑몰, 대시보드, 블로그, 포트폴리오 등 목적에 맞는 폴더 구조와 예제 컴포넌트를 생성할 수 있도록 확장할 수 있습니다.
 
-### 2. 테마 선택
+### 테마 선택
 
-예시:
+기본형, 미니멀, 대시보드형, 카드형 UI 등 테마에 따라 예제 컴포넌트와 스타일 구성을 다르게 생성할 수 있습니다.
 
-* 기본형
-* 미니멀
-* 대시보드형
-* 카드형 UI
-
-선택한 테마에 따라 예제 컴포넌트와 스타일 구성을 다르게 생성할 수 있습니다.
-
-### 3. 템플릿 엔진화
+### 템플릿 엔진화
 
 현재는 파일 복사 중심이지만, 이후에는 템플릿 파일 안에 변수를 넣고 치환하는 방식으로 확장할 수 있습니다.
-
-예시:
 
 ```txt
 {{PROJECT_NAME}}
@@ -463,14 +403,6 @@ v1 이후에는 다음 기능을 추가할 수 있습니다.
 {{THEME_NAME}}
 ```
 
-### 4. LEARN.md 자동 생성
+### LEARN.md 자동 생성
 
-생성된 프로젝트 안에 학습 가이드를 함께 넣을 수 있습니다.
-
-예시:
-
-```txt
-LEARN.md
-```
-
-이 파일에는 선택한 기술 스택에 대한 설명과 공부 순서를 적을 수 있습니다.
+생성된 프로젝트 안에 선택한 기술 스택에 대한 설명과 학습 순서를 담은 `LEARN.md`를 함께 생성할 수 있습니다.
