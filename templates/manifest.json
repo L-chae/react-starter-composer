@@ -40,12 +40,13 @@
       "dependencies": [],
       "devDependencies": [
         "tailwindcss",
+        "@tailwindcss/postcss",
         "postcss",
         "autoprefixer"
       ],
       "scripts": {},
       "installCommands": [
-        "npm install -D tailwindcss postcss autoprefixer"
+        "npm install -D tailwindcss @tailwindcss/postcss postcss autoprefixer"
       ]
     },
     {
