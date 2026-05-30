@@ -1,6 +1,5 @@
 // @vitest-environment jsdom
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import JSZip from 'jszip';
 import { createProjectZip } from '../src/composer/createProjectZip';
 import type { GeneratedFile } from '../src/types/composer';
 
