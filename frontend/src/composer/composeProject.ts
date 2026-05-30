@@ -6,8 +6,16 @@ import type {
   GeneratedFile,
 } from "../types/composer";
 
-import { applyStyling } from './applyStyling';
-
+import { applyStyling } from "./applyStyling";
+import { applyLibraryRule } from "./applyLibraryRule";
+import {
+  getIndexHtmlTemplate,
+  getViteConfigTemplate,
+  getMainEntryTemplate,
+  getAppTemplate,
+  getTsConfigNodeTemplate,
+  getTsConfigTemplate,
+} from "../templates/base";
 /**
  * 프로젝트 생성기 핵심 함수
  * 사용자가 선택한 옵션을 받아서
@@ -80,24 +88,56 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
     type: "error" | "warning";
     message: string;
   }[] = [];
+  // =====================================================
+  // 4. 언어(JS / TS) 설정 및 React 기본 뼈대 적용
+  // =====================================================
+  const isTs = selection.language === "ts";
+  const ext = isTs ? "tsx" : "jsx";
+  const scriptExt = isTs ? "ts" : "js";
 
-  // =====================================================
-  // 4. 언어(JS / TS) 설정 적용
-  // =====================================================
-  // 사용자가 TypeScript 선택한 경우
-  if (selection.language === "ts") {
+  // 사용자가 TypeScript 선택한 경우 의존성 추가
+  if (isTs) {
     // TypeScript 설치
     packageJsonData.devDependencies["typescript"] = "^5.5.3";
-
     // React 타입 설치
     packageJsonData.devDependencies["@types/react"] = "^18.3.3";
-
     // ReactDOM 타입 설치
     packageJsonData.devDependencies["@types/react-dom"] = "^18.3.0";
 
-    // 나중에 tsconfig.json 생성 예정
-    // files.push(...)
+    // TS 설정 파일 주입
+    files.push({
+      path: "tsconfig.json",
+      reason: "TypeScript 메인 컴파일러 설정",
+      content: getTsConfigTemplate(),
+    });
+    files.push({
+      path: "tsconfig.node.json",
+      reason: "Vite 설정 파일을 위한 TypeScript 설정",
+      content: getTsConfigNodeTemplate(),
+    });
   }
+
+  // 템플릿 폴더에서 순수 문자열을 가져와 파일 바구니에 주입 (이 부분이 누락되었었음!)
+  files.push({
+    path: "index.html",
+    reason: "React 앱 진입점 HTML",
+    content: getIndexHtmlTemplate(ext),
+  });
+  files.push({
+    path: `vite.config.${scriptExt}`,
+    reason: "Vite 번들러 기본 설정",
+    content: getViteConfigTemplate(),
+  });
+  files.push({
+    path: `src/main.${ext}`,
+    reason: "React 렌더링 엔트리 파일",
+    content: getMainEntryTemplate(isTs, ext),
+  });
+  files.push({
+    path: `src/App.${ext}`,
+    reason: "루트 컴포넌트",
+    content: getAppTemplate(),
+  });
 
   // =====================================================
   // 5. 스타일링 적용
@@ -106,16 +146,13 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
   // Tailwind 선택 시
   // package.json 의존성 추가
   // tailwind.config.js 생성
-  //
-  // 아직 구현 안됨
-  // applyStyling(...)
 
-applyStyling({
+  applyStyling({
     draftFiles: files,
     draftPackageJson: packageJsonData,
     styling: selection.styling,
   });
-  
+
   // =====================================================
   // 6. 선택 라이브러리 적용
   // =====================================================
@@ -125,17 +162,13 @@ applyStyling({
   // TanStack Query
   //
   // 각각 설치 정보 추가
-  //
-  // 아직 구현 안됨
-
-  // TODO:
-  // selection.selectedLibraries.forEach(lib => {
-  //   applyLibrary(
-  //      files,
-  //      packageJsonData,
-  //      lib
-  //   );
-  // });
+  selection.selectedLibraries.forEach((libId) => {
+    applyLibraryRule({
+      draftFiles: files,
+      draftPackageJson: packageJsonData,
+      libraryId: libId,
+    });
+  });
 
   // =====================================================
   // 7. package.json 파일 생성
