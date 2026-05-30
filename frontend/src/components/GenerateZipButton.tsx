@@ -1,27 +1,24 @@
 import { useState } from 'react';
-import JSZip from 'jszip';
 import type { ComposerResult } from '../types/composer';
 import { useComposerStore } from '../store/useComposerStore';
+import { createProjectZip } from '../composer/createProjectZip';
 
 const GENERATING_MESSAGE = '브라우저에서 프로젝트를 조립하고 ZIP을 생성 중입니다...';
 
 interface GenerateZipButtonProps {
-  // 코어 엔진이 조립한 최종 결과물을 Props로 받습니다.
   resultData: ComposerResult;
 }
 
 export function GenerateZipButton({ resultData }: GenerateZipButtonProps) {
-  // 스토어에서 초기화 액션만 꺼내옵니다.
   const resetStore = useComposerStore((state) => state.reset);
 
-  // 이 컴포넌트 안에서만 쓰이는 로컬 UI 상태들
   const [isGenerating, setIsGenerating] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
   const handleReset = () => {
-    resetStore(); // 전역 상태 초기화
+    resetStore();
     setStatusMessage('');
     setErrorMessage('');
     setSuccessMessage('');
@@ -38,23 +35,8 @@ export function GenerateZipButton({ resultData }: GenerateZipButtonProps) {
         throw new Error(resultData.issues[0]?.message || '생성할 수 없는 설정입니다.');
       }
 
-      // 브라우저 단독 압축 로직
-      const zip = new JSZip();
-      resultData.files.forEach(file => {
-        zip.file(`${resultData.projectName}/${file.path}`, file.content);
-      });
-
-      const blob = await zip.generateAsync({ type: 'blob' });
-      const downloadUrl = URL.createObjectURL(blob);
-      
-      const link = document.createElement('a');
-      link.href = downloadUrl;
-      link.download = `${resultData.projectName}.zip`;
-      
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-      URL.revokeObjectURL(downloadUrl);
+      // 분리된 순수 함수 호출
+      await createProjectZip(resultData.projectName, resultData.files);
 
       setStatusMessage('');
       setSuccessMessage(`${resultData.projectName}.zip 다운로드가 즉시 완료되었습니다. 🚀`);

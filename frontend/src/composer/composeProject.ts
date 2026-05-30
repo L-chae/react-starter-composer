@@ -16,6 +16,9 @@ import {
   getTsConfigNodeTemplate,
   getTsConfigTemplate,
 } from "../templates/base";
+
+import { createPackageJsonData } from './createPackageJsonData';
+
 /**
  * 프로젝트 생성기 핵심 함수
  * 사용자가 선택한 옵션을 받아서
@@ -26,54 +29,7 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
   // 1. package.json 기본 데이터 생성
   // =====================================================
   // 최종적으로 package.json이 될 객체
-  const packageJsonData = {
-    // 프로젝트 이름
-    name: selection.projectName,
-
-    // npm publish 방지
-    private: true,
-
-    // 프로젝트 버전
-    version: "0.0.0",
-
-    // ES Module 방식 사용
-    type: "module" as const,
-
-    // npm run 명령어 목록
-    scripts: {
-      // 개발 서버 실행
-      dev: "vite",
-
-      // 빌드 명령
-      // TypeScript면 tsc 먼저 실행
-      build:
-        selection.language === "ts" ? "tsc -b && vite build" : "vite build",
-
-      // 빌드 결과 미리보기
-      preview: "vite preview",
-
-      // 타입스크립트에게
-      // "문자열 key, 문자열 value 객체" 라고 알려줌
-    } as Record<string, string>,
-
-    // 실제 서비스 실행 시 필요한 라이브러리
-    dependencies: {
-      // React
-      react: "^18.3.1",
-
-      // React DOM
-      "react-dom": "^18.3.1",
-    } as Record<string, string>,
-
-    // 개발 시에만 필요한 라이브러리
-    devDependencies: {
-      // Vite
-      vite: "^5.4.1",
-
-      // React용 Vite 플러그인
-      "@vitejs/plugin-react": "^4.3.1",
-    } as Record<string, string>,
-  };
+  const packageJsonData = createPackageJsonData(selection.projectName, selection.language);
 
   // =====================================================
   // 2. 생성될 파일 목록
@@ -97,6 +53,7 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
 
   // 사용자가 TypeScript 선택한 경우 의존성 추가
   if (isTs) {
+    if (!packageJsonData.devDependencies) packageJsonData.devDependencies = {};
     // TypeScript 설치
     packageJsonData.devDependencies["typescript"] = "^5.5.3";
     // React 타입 설치
