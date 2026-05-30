@@ -17,8 +17,8 @@ import {
   getTsConfigTemplate,
 } from "../templates/base";
 
-import { createPackageJsonData } from './createPackageJsonData';
-
+import { createPackageJsonData } from "./createPackageJsonData";
+import { DEPENDENCY_VERSIONS } from "../rules/dependencyVersions";
 /**
  * 프로젝트 생성기 핵심 함수
  * 사용자가 선택한 옵션을 받아서
@@ -29,7 +29,10 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
   // 1. package.json 기본 데이터 생성
   // =====================================================
   // 최종적으로 package.json이 될 객체
-  const packageJsonData = createPackageJsonData(selection.projectName, selection.language);
+  const packageJsonData = createPackageJsonData(
+    selection.projectName,
+    selection.language,
+  );
 
   // =====================================================
   // 2. 생성될 파일 목록
@@ -54,13 +57,13 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
   // 사용자가 TypeScript 선택한 경우 의존성 추가
   if (isTs) {
     if (!packageJsonData.devDependencies) packageJsonData.devDependencies = {};
-    // TypeScript 설치
-    packageJsonData.devDependencies["typescript"] = "^5.5.3";
-    // React 타입 설치
-    packageJsonData.devDependencies["@types/react"] = "^18.3.3";
-    // ReactDOM 타입 설치
-    packageJsonData.devDependencies["@types/react-dom"] = "^18.3.0";
-
+    // 룰 객체에서 버전 참조
+    packageJsonData.devDependencies["typescript"] =
+      DEPENDENCY_VERSIONS.typescript;
+    packageJsonData.devDependencies["@types/react"] =
+      DEPENDENCY_VERSIONS["@types/react"];
+    packageJsonData.devDependencies["@types/react-dom"] =
+      DEPENDENCY_VERSIONS["@types/react-dom"];
     // TS 설정 파일 주입
     files.push({
       path: "tsconfig.json",

@@ -1,8 +1,6 @@
 import type { PackageJsonData, Language } from '../types/composer';
+import { DEPENDENCY_VERSIONS } from '../rules/dependencyVersions';
 
-/**
- * 프로젝트 기본 package.json 객체를 생성합니다.
- */
 export function createPackageJsonData(projectName: string, language: Language): PackageJsonData {
   const isTs = language === 'ts';
 
@@ -17,12 +15,12 @@ export function createPackageJsonData(projectName: string, language: Language): 
       preview: 'vite preview',
     },
     dependencies: {
-      react: '^18.3.1',
-      'react-dom': '^18.3.1',
+      react: DEPENDENCY_VERSIONS.react,
+      'react-dom': DEPENDENCY_VERSIONS['react-dom'],
     },
     devDependencies: {
-      vite: '^5.4.1',
-      '@vitejs/plugin-react': '^4.3.1',
+      vite: DEPENDENCY_VERSIONS.vite,
+      '@vitejs/plugin-react': DEPENDENCY_VERSIONS['@vitejs/plugin-react'],
     },
   };
 }
