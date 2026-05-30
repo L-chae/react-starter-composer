@@ -19,6 +19,8 @@ import {
 
 import { createPackageJsonData } from "./createPackageJsonData";
 import { DEPENDENCY_VERSIONS } from "../rules/dependencyVersions";
+import { createComposerConfig } from './createComposerConfig';
+import { createSetupDiff } from './createSetupDiff';
 /**
  * 프로젝트 생성기 핵심 함수
  * 사용자가 선택한 옵션을 받아서
@@ -148,40 +150,19 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
   // 8. 최종 결과 반환
   // =====================================================
   return {
-    // 프로젝트 이름
     projectName: selection.projectName,
-
-    // JS 또는 TS
     language: selection.language,
-
-    // CSS 또는 Tailwind
     styling: selection.styling,
-
-    // 선택한 라이브러리 목록
     selectedLibraries: selection.selectedLibraries,
-
-    files, // 생성된 파일 목록
-
-    // package.json 객체 상태
-    // Preview 화면에서 사용 가능
+    
+    files, 
     packageJsonData,
-
-    // 추후 composer 설정 저장용
-    composerConfigData: {
-      schemaVersion: 1,
-      generatedAt: new Date().toISOString(), // 생성된 현재 시간 기록
-      selection: selection, // 사용자의 원천 선택 데이터
-    },
-
-    // 어떤 변경이 발생했는지 추적
-    setupDiff: {
-      files: [],
-      dependencies: [],
-      devDependencies: [],
-      scripts: [],
-    },
-    issues, // 오류/경고 목록
-    // 에러가 하나도 없으면 true
+    
+    // 엔진에 하드코딩되어 있던 객체를 분리된 함수 호출로 교체
+    composerConfigData: createComposerConfig(selection),
+    setupDiff: createSetupDiff(),
+    
+    issues,
     isGeneratable: issues.every((issue) => issue.type !== "error"),
   };
 }
