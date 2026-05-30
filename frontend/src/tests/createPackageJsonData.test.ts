@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { createPackageJsonData } from '../src/composer/createPackageJsonData';
+import { createPackageJsonData } from '../composer/createPackageJsonData';
 
 describe('createPackageJsonData', () => {
   it('TypeScript 선택 시 build 스크립트에 tsc -b가 포함되어야 한다', () => {
