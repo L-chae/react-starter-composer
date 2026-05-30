@@ -1,0 +1,193 @@
+// types/composer.ts 파일에서 타입만 가져옴
+// import type을 사용하면 컴파일 후 JS 코드에는 포함되지 않음
+import type {
+  ComposerSelection,
+  ComposerResult,
+  GeneratedFile,
+} from "../types/composer";
+
+/**
+ * 프로젝트 생성기 핵심 함수
+ * 사용자가 선택한 옵션을 받아서
+ * package.json 데이터와 생성할 파일 목록을 조립한다.
+ */
+export function composeProject(selection: ComposerSelection): ComposerResult {
+  // =====================================================
+  // 1. package.json 기본 데이터 생성
+  // =====================================================
+  // 최종적으로 package.json이 될 객체
+  const packageJsonData = {
+    // 프로젝트 이름
+    name: selection.projectName,
+
+    // npm publish 방지
+    private: true,
+
+    // 프로젝트 버전
+    version: "0.0.0",
+
+    // ES Module 방식 사용
+    type: "module" as const,
+
+    // npm run 명령어 목록
+    scripts: {
+      // 개발 서버 실행
+      dev: "vite",
+
+      // 빌드 명령
+      // TypeScript면 tsc 먼저 실행
+      build:
+        selection.language === "ts" ? "tsc -b && vite build" : "vite build",
+
+      // 빌드 결과 미리보기
+      preview: "vite preview",
+
+      // 타입스크립트에게
+      // "문자열 key, 문자열 value 객체" 라고 알려줌
+    } as Record<string, string>,
+
+    // 실제 서비스 실행 시 필요한 라이브러리
+    dependencies: {
+      // React
+      react: "^18.3.1",
+
+      // React DOM
+      "react-dom": "^18.3.1",
+    } as Record<string, string>,
+
+    // 개발 시에만 필요한 라이브러리
+    devDependencies: {
+      // Vite
+      vite: "^5.4.1",
+
+      // React용 Vite 플러그인
+      "@vitejs/plugin-react": "^4.3.1",
+    } as Record<string, string>,
+  };
+
+  // =====================================================
+  // 2. 생성될 파일 목록
+  // =====================================================
+  // 최종적으로 생성할 파일들을 저장
+  const files: GeneratedFile[] = [];
+
+  // =====================================================
+  // 3. 경고 및 오류 저장
+  // =====================================================
+  const issues: {
+    type: "error" | "warning";
+    message: string;
+  }[] = [];
+
+  // =====================================================
+  // 4. 언어(JS / TS) 설정 적용
+  // =====================================================
+  // 사용자가 TypeScript 선택한 경우
+  if (selection.language === "ts") {
+    // TypeScript 설치
+    packageJsonData.devDependencies["typescript"] = "^5.5.3";
+
+    // React 타입 설치
+    packageJsonData.devDependencies["@types/react"] = "^18.3.3";
+
+    // ReactDOM 타입 설치
+    packageJsonData.devDependencies["@types/react-dom"] = "^18.3.0";
+
+    // 나중에 tsconfig.json 생성 예정
+    // files.push(...)
+  }
+
+  // =====================================================
+  // 5. 스타일링 적용
+  // =====================================================
+  // 예:
+  // Tailwind 선택 시
+  // package.json 의존성 추가
+  // tailwind.config.js 생성
+  //
+  // 아직 구현 안됨
+  // applyStyling(...)
+
+  // TODO:
+  // applyStyling(
+  //   files,
+  //   packageJsonData,
+  //   selection.styling
+  // );
+
+  // =====================================================
+  // 6. 선택 라이브러리 적용
+  // =====================================================
+  // 예:
+  // React Router
+  // Zustand
+  // TanStack Query
+  //
+  // 각각 설치 정보 추가
+  //
+  // 아직 구현 안됨
+
+  // TODO:
+  // selection.selectedLibraries.forEach(lib => {
+  //   applyLibrary(
+  //      files,
+  //      packageJsonData,
+  //      lib
+  //   );
+  // });
+
+  // =====================================================
+  // 7. package.json 파일 생성
+  // =====================================================
+  files.push({
+    // 생성될 파일 경로
+    path: "package.json",
+
+    // 객체 → JSON 문자열 변환
+    content: JSON.stringify(packageJsonData, null, 2) + "\n",
+
+    // 파일 생성 이유
+    reason: "프로젝트 핵심 설정 및 의존성 파일",
+  });
+
+  // =====================================================
+  // 8. 최종 결과 반환
+  // =====================================================
+  return {
+    // 프로젝트 이름
+    projectName: selection.projectName,
+
+    // JS 또는 TS
+    language: selection.language,
+
+    // CSS 또는 Tailwind
+    styling: selection.styling,
+
+    // 선택한 라이브러리 목록
+    selectedLibraries: selection.selectedLibraries,
+
+    files, // 생성된 파일 목록
+
+    // package.json 객체 상태
+    // Preview 화면에서 사용 가능
+    packageJsonData,
+
+    // 추후 composer 설정 저장용
+    composerConfigData: {
+      schemaVersion: 1,
+      generatedAt: new Date().toISOString(), // 생성된 현재 시간 기록
+      selection: selection, // 사용자의 원천 선택 데이터
+    },
+
+    // 어떤 변경이 발생했는지 추적
+    setupDiff: {
+      files: [],
+      dependencies: [],
+      devDependencies: [],
+      scripts: [],
+    },
+    issues, // 오류/경고 목록
+    // 에러가 하나도 없으면 true
+    isGeneratable: issues.every((issue) => issue.type !== "error"),
+  };
+}
