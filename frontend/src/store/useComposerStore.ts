@@ -5,6 +5,7 @@ import type {
   LibraryId,
   ComposerSelection,
 } from "../types/composer";
+import { sanitizeProjectName } from '../utils/sanitizeProjectName';
 
 interface ComposerState {
   projectName: string;
@@ -61,7 +62,7 @@ export const useComposerStore = create<ComposerState>((set, get) => ({
       .map((entry) => entry[0] as LibraryId); // entry[0]은 key(string)를 의미함
 
     return {
-      projectName: state.projectName.trim() || "my-react-app",
+      projectName: sanitizeProjectName(state.projectName),
       language: state.language,
       styling: state.styling,
       selectedLibraries: activeLibs,

@@ -8,6 +8,7 @@ import { ProjectSettings } from './components/ProjectSettings'
 import { LibraryCart } from './components/LibraryCart'
 import { GeneratedFileTree } from './components/GeneratedFileTree'
 import { GenerateZipButton } from './components/GenerateZipButton' // 👈 추가된 버튼 컴포넌트
+import { buildFileTree } from './utils/buildFileTree'
 
 function App() {
   const { 
@@ -26,7 +27,7 @@ function App() {
       ...selection.selectedLibraries
     ];
 
-    const fileTree = `${result.projectName}/\n` + result.files.map(f => `├─ ${f.path}`).join('\n');
+    const fileTree = buildFileTree(result.projectName, result.files);
 
     return {
       stacks,
