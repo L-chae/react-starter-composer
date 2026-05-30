@@ -7,7 +7,8 @@ import { useComposerStore } from './store/useComposerStore'
 import { ProjectSettings } from './components/ProjectSettings'
 import { LibraryCart } from './components/LibraryCart'
 import { GeneratedFileTree } from './components/GeneratedFileTree'
-import { GenerateZipButton } from './components/GenerateZipButton' // 👈 추가된 버튼 컴포넌트
+import { GenerateZipButton } from './components/GenerateZipButton'
+import { SetupDiffPanel } from './components/SetupDiffPanel'
 import { buildFileTree } from './utils/buildFileTree'
 
 function App() {
@@ -53,12 +54,12 @@ function App() {
           <ProjectSettings />
           <LibraryCart />
           
-          {/* 압축 및 다운로드는 이 컴포넌트가 전담합니다 */}
           <GenerateZipButton resultData={preview.resultData} />
         </form>
 
         <section className="panel">
           <GeneratedFileTree preview={preview} />
+          <SetupDiffPanel diff={preview.resultData.setupDiff} />
         </section>
       </section>
     </main>

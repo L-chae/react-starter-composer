@@ -21,6 +21,7 @@ import { createPackageJsonData } from "./createPackageJsonData";
 import { DEPENDENCY_VERSIONS } from "../rules/dependencyVersions";
 import { createComposerConfig } from './createComposerConfig';
 import { createSetupDiff } from './createSetupDiff';
+import { getReadmeTemplate, getSetupReportTemplate } from '../templates/docs';
 /**
  * 프로젝트 생성기 핵심 함수
  * 사용자가 선택한 옵션을 받아서
@@ -146,8 +147,39 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
     reason: "프로젝트 핵심 설정 및 의존성 파일",
   });
 
+// =====================================================
+  // 8. 문서 및 메타데이터 주입 (최종 직렬화)
   // =====================================================
-  // 8. 최종 결과 반환
+  const composerConfigData = createComposerConfig(selection);
+  const setupDiff = createSetupDiff(selection.projectName, selection.language, files, packageJsonData);
+
+  // 객체로 관리하던 JSON 데이터들을 문자열로 변환하여 파일 트리에 추가 (v2 기획안 준수)
+  files.push({
+    path: 'package.json',
+    reason: '프로젝트 의존성 및 스크립트 명세',
+    content: JSON.stringify(packageJsonData, null, 2) + '\n'
+  });
+
+  files.push({
+    path: 'composer.config.json',
+    reason: '환경 복원을 위한 메타데이터',
+    content: JSON.stringify(composerConfigData, null, 2) + '\n'
+  });
+
+  files.push({
+    path: 'README.md',
+    reason: '프로젝트 시작 가이드',
+    content: getReadmeTemplate(selection.projectName)
+  });
+
+  files.push({
+    path: 'SETUP_REPORT.md',
+    reason: '프로젝트 세팅 상세 리포트',
+    content: getSetupReportTemplate(selection, setupDiff)
+  });
+
+  // =====================================================
+  // 9. 최종 결과 반환
   // =====================================================
   return {
     projectName: selection.projectName,
@@ -157,10 +189,8 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
     
     files, 
     packageJsonData,
-    
-    // 엔진에 하드코딩되어 있던 객체를 분리된 함수 호출로 교체
-    composerConfigData: createComposerConfig(selection),
-    setupDiff: createSetupDiff(),
+    composerConfigData,
+    setupDiff,
     
     issues,
     isGeneratable: issues.every((issue) => issue.type !== "error"),
