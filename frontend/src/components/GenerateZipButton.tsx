@@ -48,7 +48,7 @@ export function GenerateZipButton({ resultData }: GenerateZipButtonProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 mt-4 pt-6 border-t border-gray-100">
+    <div className="flex flex-col gap-4 pt-6 border-t border-gray-100">
       
       {/* 상태 메시지 알림창 */}
       <div className="flex flex-col gap-2 empty:hidden">
