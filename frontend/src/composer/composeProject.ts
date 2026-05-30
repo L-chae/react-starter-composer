@@ -6,6 +6,8 @@ import type {
   GeneratedFile,
 } from "../types/composer";
 
+import { applyStyling } from './applyStyling';
+
 /**
  * 프로젝트 생성기 핵심 함수
  * 사용자가 선택한 옵션을 받아서
@@ -108,13 +110,12 @@ export function composeProject(selection: ComposerSelection): ComposerResult {
   // 아직 구현 안됨
   // applyStyling(...)
 
-  // TODO:
-  // applyStyling(
-  //   files,
-  //   packageJsonData,
-  //   selection.styling
-  // );
-
+applyStyling({
+    draftFiles: files,
+    draftPackageJson: packageJsonData,
+    styling: selection.styling,
+  });
+  
   // =====================================================
   // 6. 선택 라이브러리 적용
   // =====================================================
