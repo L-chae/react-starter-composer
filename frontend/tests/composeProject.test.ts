@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { composeProject } from '../composer/composeProject';
-import type { ComposerSelection } from '../types/composer';
+import { composeProject } from '../src/composer/composeProject';
+import type { ComposerSelection } from '../src/types/composer';
 
 function createSelection(
   overrides: Partial<ComposerSelection> = {}
